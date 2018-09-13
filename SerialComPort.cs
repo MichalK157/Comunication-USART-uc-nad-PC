@@ -31,13 +31,13 @@ public class PortChat
 
         _serialPort.Open();
         _continue = true;
-        readThread.Start();
+        
 
         Console.Write("Name: ");
         name = Console.ReadLine();
 
         Console.WriteLine("Type QUIT to exit");
-
+		readThread.Start();
         while (_continue)
         {
             data[0] = Console.ReadKey().KeyChar;
