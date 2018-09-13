@@ -1,12 +1,11 @@
 using System;
 using System.IO.Ports;
 using System.Threading;
-
 public class PortChat
 {
     static bool _continue;
+	static byte Infodata;
     static SerialPort _serialPort;
-
     public static void Main()
     {
         string name;
@@ -48,45 +47,29 @@ public class PortChat
             {
                 _continue = false;
             }
-            else
+          /*  else
             {
                 _serialPort.Write(			//// problem dorozwiazania 
                    data,0,1);
-            }
+            }*/
         }
-
         readThread.Join();
         _serialPort.Close();
     }
 
     public static void Read()
     {
-		byte []data=new byte[2];
-		byte ddata=0x00;
-		int i=0;
-		short val=0;
         while (_continue)
         {
             try
             {
-                byte _message = (byte)_serialPort.ReadByte();
-				if	(_message==0x09){
-					//Console.WriteLine("uc:]"+);
-					/*i=0;
-					if (BitConverter.IsLittleEndian)
-    					Array.Reverse(data);
-					val=BitConverter.ToInt16(data,0);
-					*/Console.WriteLine("uc:"+ddata);
-				}else{
-					/*data[i]=_message;
-					i++;*/
-					ddata=_message;
-				}
-            }
-            catch (TimeoutException) { }
-        }
-		
-    }
+					byte _message = (byte)_serialPort.ReadByte();
+					Infodata=_message;
+					RxData(Infodata,(byte)_serialPort.ReadByte());
+			}
+			catch (TimeoutException) { }
+		}
+	}
 
     // Display Port values and prompt user to enter a port.
     public static string SetPortName(string defaultPortName)
@@ -203,5 +186,56 @@ public class PortChat
 
         return (Handshake)Enum.Parse(typeof(Handshake), handshake, true);
     }
-}
 
+		public static void RxData( byte infodata, byte data)
+		{
+			if(infodata==0x00)	//Usatrt init
+			{
+				Console.WriteLine("Usart has been initialized");
+			}
+			if(infodata==0x01)	//TWI init
+			{
+				Console.WriteLine("twi has been initialized");
+			}
+			if(infodata==0x02)	//ERR1
+			{
+				Console.WriteLine("ERR1 reserwation for something");
+			}
+			if(infodata==0x03)	//ERR2
+			{
+				Console.WriteLine("ERR2 reserwation for something");
+			}
+			if(infodata==0x04)	//ERR3
+			{
+				Console.WriteLine("ERR3 reserwation for something");
+			}
+			if(infodata==0x10)	//Ax
+			{
+				Console.WriteLine("Ax:"+data);
+			}
+			if(infodata==0x11)	//Ay
+			{
+				Console.WriteLine("Ay:"+data);
+			}
+			if(infodata==0x12)	//Az
+			{
+				Console.WriteLine("Az:"+data);
+			}
+			if(infodata==0x20)	//T1
+			{
+				Console.WriteLine("Temp1:"+data);
+			}
+			if(infodata==0x21)	//T2
+			{
+				Console.WriteLine("Temp2:"+data);
+			}
+			if(infodata==0x22)	//T3
+			{
+				Console.WriteLine("Temp3:"+data);
+			}
+			if(infodata==0x23)	//T4
+			{
+				Console.WriteLine("Temp4:"+data);
+			}
+		}
+}
