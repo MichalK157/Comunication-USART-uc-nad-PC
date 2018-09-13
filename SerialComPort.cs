@@ -16,7 +16,7 @@ public class PortChat
 
         // Create a new SerialPort object with default settings.
         _serialPort = new SerialPort();
-
+		_serialPort.PortName="COM3";
         // Allow the user to set the appropriate properties.
         _serialPort.PortName = SetPortName(_serialPort.PortName);
         _serialPort.BaudRate = SetPortBaudRate(_serialPort.BaudRate);
