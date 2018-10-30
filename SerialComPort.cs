@@ -4,8 +4,14 @@ using System.Threading;
 public class PortChat
 {
     static bool _continue;
+	static bool _readsdcard;
 	static byte Infodata;
     static SerialPort _serialPort;
+	static char [] msg= new char[10];
+	
+	msg[1]=0x40;
+	
+	
     public static void Main()
     {
         string name;
@@ -47,6 +53,10 @@ public class PortChat
             {
                 _continue = false;
             }
+			if else (data[0]==0x40)
+			{
+				_serialPort .Write(msg,0,1);
+			}
           /*  else
             {
                 _serialPort.Write(			//// problem dorozwiazania 
@@ -61,14 +71,17 @@ public class PortChat
     {
         while (_continue)
         {
-            try
+			while(!_readsdcard)
+			{
+				try
             {
 					byte _message = (byte)_serialPort.ReadByte();
 					Infodata=_message;
-					RxData(Infodata,(byte)_serialPort.ReadByte());
+					RxData(Infodata,(byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte());
 			}
-			catch (TimeoutException) { }
-		}
+				catch (TimeoutException) { }
+			}	
+   		}
 	}
 
     // Display Port values and prompt user to enter a port.
@@ -187,7 +200,7 @@ public class PortChat
         return (Handshake)Enum.Parse(typeof(Handshake), handshake, true);
     }
 
-		public static void RxData( byte infodata, byte data)
+		public static void RxData( byte infodata, byte datah,byte datal)
 		{
 			if(infodata==0x00)	//Usatrt init
 			{
@@ -211,31 +224,35 @@ public class PortChat
 			}
 			if(infodata==0x10)	//Ax
 			{
-				Console.WriteLine("Ax:"+data);
+				Console.WriteLine("Ax:"+datah);
 			}
 			if(infodata==0x11)	//Ay
 			{
-				Console.WriteLine("Ay:"+data);
+				Console.WriteLine("Ay:"+datah);
 			}
 			if(infodata==0x12)	//Az
 			{
-				Console.WriteLine("Az:"+data);
+				Console.WriteLine("Az:"+datah);
 			}
 			if(infodata==0x20)	//T1
 			{
-				Console.WriteLine("Temp1:"+data);
+				Console.WriteLine("Temp1:"+datah+datal);
 			}
 			if(infodata==0x21)	//T2
 			{
-				Console.WriteLine("Temp2:"+data);
+				Console.WriteLine("Temp2:"+datah+datal);
 			}
 			if(infodata==0x22)	//T3
 			{
-				Console.WriteLine("Temp3:"+data);
+				Console.WriteLine("Temp3:"+datah+datal);
 			}
 			if(infodata==0x23)	//T4
 			{
-				Console.WriteLine("Temp4:"+data);
+				Console.WriteLine("Temp4:"+datah+datal);
+			}
+			if(infodata=0xff)
+			{
+					
 			}
 		}
 }
