@@ -4,17 +4,11 @@ using System.Threading;
 public class PortChat
 {
     static bool _continue;
-	static bool _readsdcard;
-	static byte Infodata;
-    static SerialPort _serialPort;
-	static char [] msg= new char[10];
-	
-	msg[1]=0x40;
-	
+    static SerialPort _serialPort;	
 	
     public static void Main()
     {
-        string name;
+        string name= new string();
         //string message;
 		char [] data=new char[2];
         StringComparer stringComparer = StringComparer.OrdinalIgnoreCase;
@@ -53,10 +47,6 @@ public class PortChat
             {
                 _continue = false;
             }
-			if else (data[0]==0x40)
-			{
-				_serialPort .Write(msg,0,1);
-			}
           /*  else
             {
                 _serialPort.Write(			//// problem dorozwiazania 
@@ -71,17 +61,15 @@ public class PortChat
     {
         while (_continue)
         {
-			while(!_readsdcard)
-			{
 				try
             {
-					byte _message = (byte)_serialPort.ReadByte();
-					Infodata=_message;
-					RxData(Infodata,(byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte());
+					ReadHL((byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte());
 			}
-				catch (TimeoutException) { }
+				catch (TimeoutException e)
+				{
+					Console.WriteLine(e);
+				}
 			}	
-   		}
 	}
 
     // Display Port values and prompt user to enter a port.
@@ -199,60 +187,9 @@ public class PortChat
 
         return (Handshake)Enum.Parse(typeof(Handshake), handshake, true);
     }
-
-		public static void RxData( byte infodata, byte datah,byte datal)
-		{
-			if(infodata==0x00)	//Usatrt init
-			{
-				Console.WriteLine("Usart has been initialized");
-			}
-			if(infodata==0x01)	//TWI init
-			{
-				Console.WriteLine("twi has been initialized");
-			}
-			if(infodata==0x02)	//ERR1
-			{
-				Console.WriteLine("ERR1 reserwation for something");
-			}
-			if(infodata==0x03)	//ERR2
-			{
-				Console.WriteLine("ERR2 reserwation for something");
-			}
-			if(infodata==0x04)	//ERR3
-			{
-				Console.WriteLine("ERR3 reserwation for something");
-			}
-			if(infodata==0x10)	//Ax
-			{
-				Console.WriteLine("Ax:"+datah);
-			}
-			if(infodata==0x11)	//Ay
-			{
-				Console.WriteLine("Ay:"+datah);
-			}
-			if(infodata==0x12)	//Az
-			{
-				Console.WriteLine("Az:"+datah);
-			}
-			if(infodata==0x20)	//T1
-			{
-				Console.WriteLine("Temp1:"+datah+datal);
-			}
-			if(infodata==0x21)	//T2
-			{
-				Console.WriteLine("Temp2:"+datah+datal);
-			}
-			if(infodata==0x22)	//T3
-			{
-				Console.WriteLine("Temp3:"+datah+datal);
-			}
-			if(infodata==0x23)	//T4
-			{
-				Console.WriteLine("Temp4:"+datah+datal);
-			}
-			if(infodata=0xff)
-			{
-					
-			}
-		}
+	
+	public static void ReadHL(byte chanel,byte h,byte l)
+	{
+		Console.WriteLine("ADC"+chanel+"="+h+l);
+	}
 }

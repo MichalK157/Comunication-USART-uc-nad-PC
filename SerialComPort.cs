@@ -4,16 +4,22 @@ using System.Threading;
 public class PortChat
 {
     static bool _continue;
-	static bool _readsdcard;
-	static byte Infodata;
+	static byte []maindata=new byte[3];
+	const double a=0.24;
+	const double b=22.23;
     static SerialPort _serialPort;
-	static char [] msg= new char[10];
+	static byte [] msg= new byte[10];
 	
-	msg[1]=0x40;
+	//msg[1]=0x40;
 	
 	
     public static void Main()
     {
+		//msg[] input
+		msg[1]=0x40;
+		
+		////	
+	
         string name;
         //string message;
 		char [] data=new char[2];
@@ -22,7 +28,7 @@ public class PortChat
 
         // Create a new SerialPort object with default settings.
         _serialPort = new SerialPort();
-		_serialPort.PortName="COM3";
+		_serialPort.PortName="COM4";
         // Allow the user to set the appropriate properties.
         _serialPort.PortName = SetPortName(_serialPort.PortName);
         _serialPort.BaudRate = SetPortBaudRate(_serialPort.BaudRate);
@@ -42,7 +48,7 @@ public class PortChat
         Console.Write("Name: ");
         name = Console.ReadLine();
 
-        Console.WriteLine("Type QUIT to exit");
+        Console.WriteLine("Press Esc to exit");
 		readThread.Start();
         while (_continue)
         {
@@ -53,10 +59,18 @@ public class PortChat
             {
                 _continue = false;
             }
-			if else (data[0]==0x40)
+			if(data[0]==0x68)
+			{
+				Help();
+			}
+			if(data[0]==0x6c)
+			{
+				LastData(maindata);
+			}
+			/*if else (data[0]==0x40)
 			{
 				_serialPort .Write(msg,0,1);
-			}
+			}*/
           /*  else
             {
                 _serialPort.Write(			//// problem dorozwiazania 
@@ -71,16 +85,12 @@ public class PortChat
     {
         while (_continue)
         {
-			while(!_readsdcard)
-			{
+			
 				try
             {
-					byte _message = (byte)_serialPort.ReadByte();
-					Infodata=_message;
-					RxData(Infodata,(byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte());
+					RxData((byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte());
 			}
 				catch (TimeoutException) { }
-			}	
    		}
 	}
 
@@ -199,7 +209,77 @@ public class PortChat
 
         return (Handshake)Enum.Parse(typeof(Handshake), handshake, true);
     }
-
+	
+		public static void ADCValue(string sensor,byte adress,byte datah,byte datal)
+		{
+			int data=0;
+			maindata[0]=adress;
+			maindata[1]=datal;
+			maindata[2]=datah;
+			try
+			{
+				data=BitConverter.ToUInt16(maindata,1);
+			}
+			catch(Exception e){
+				Console.WriteLine(e);
+			}
+			data=(int)(a*data-b);
+			Console.WriteLine(sensor+data+" (+/-2°C)");
+		}
+		
+		public static void LastData(byte[]_data)
+		{
+			int data=0;
+			
+			try
+			{
+				data=BitConverter.ToUInt16(_data,1);
+			}
+			catch(Exception e){
+				Console.WriteLine(e);
+			}
+			data=(int)(a*data-b);
+			
+			if (_data[0]==0x00)	//Usatrt init
+			{
+				Console.WriteLine("Usart has been initialized");
+			}
+			if (_data[0]==0x01)	//TWI init
+			{
+				Console.WriteLine("twi has been initialized");
+			}
+			if (_data[0]==0x02)	//ERR1
+			{
+				Console.WriteLine("ERR1 reserwation for something");
+			}
+			if (_data[0]==0x03)	//ERR2
+			{
+				Console.WriteLine("ERR2 reserwation for something");
+			}
+			if (_data[0]==0x04)	//ERR3
+			{
+				Console.WriteLine("ERR3 reserwation for something");
+			}
+			if(_data[0]==0x10)	//Ax
+			{
+				Console.WriteLine("Ax:"+_data[2]);
+			}
+			if(_data[0]==0x11)	//Ay
+			{
+				Console.WriteLine("Ay:"+_data[2]);
+			}
+			if (_data[0]==0x12)	//Az
+			{
+				Console.WriteLine("Az:"+_data[2]);
+			}
+			if(_data[0]==0x20||_data[0]==0x21||_data[0]==0x22||_data[0]==0x23)
+			{
+			Console.WriteLine("0x{0:X}",_data[0]);
+			Console.WriteLine(data+" (+/-2°C)");
+			}
+			
+		} 
+		
 		public static void RxData( byte infodata, byte datah,byte datal)
 		{
 			if(infodata==0x00)	//Usatrt init
@@ -236,23 +316,38 @@ public class PortChat
 			}
 			if(infodata==0x20)	//T1
 			{
-				Console.WriteLine("Temp1:"+datah+datal);
+				ADCValue("Board temperature: ",infodata,datah,datal);
 			}
 			if(infodata==0x21)	//T2
 			{
-				Console.WriteLine("Temp2:"+datah+datal);
+				ADCValue("Sensor 1 temperature:",infodata,datah,datal);
 			}
 			if(infodata==0x22)	//T3
 			{
-				Console.WriteLine("Temp3:"+datah+datal);
+				ADCValue("Sensor 2 temperature:",infodata,datah,datal);
 			}
 			if(infodata==0x23)	//T4
 			{
-				Console.WriteLine("Temp4:"+datah+datal);
+				ADCValue("Sensor 3 temperature:",infodata,datah,datal);
 			}
-			if(infodata=0xff)
+			if(infodata==0xff)
 			{
 					
 			}
 		}
+		
+		public static void Help()
+		{
+			Console.WriteLine("##########################################HELP##########################################");
+			Console.WriteLine("########################################################################################");
+			Console.WriteLine("Program connect to Cooling System by UART and read data errors from uC");
+			Console.WriteLine("Reading data- use micro switch on board to start and stop communication or");
+			Console.WriteLine("Press \"t\" to start communication and read data(now doesn't work");
+			Console.WriteLine("Press \"h\" show Help");
+			Console.WriteLine("Press \"Esc\" to Exit");
+			Console.WriteLine("Press \"l\" to show last get data ");
+			Console.WriteLine("");
+		}
+		
+		
 }
