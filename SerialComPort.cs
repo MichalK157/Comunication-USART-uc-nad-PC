@@ -8,21 +8,16 @@ public class PortChat
 	const double a=0.24;
 	const double b=22.23;
     static SerialPort _serialPort;
-	static byte [] msg= new byte[10];
+	static byte [] msg= new byte[3];
 	
 	//msg[1]=0x40;
 	
 	
     public static void Main()
-    {
-		//msg[] input
-		msg[1]=0x40;
-		
-		////	
+    {	
 	
         string name;
-        //string message;
-		char [] data=new char[2];
+      	char  data;
         StringComparer stringComparer = StringComparer.OrdinalIgnoreCase;
         Thread readThread = new Thread(Read);
 
@@ -52,30 +47,25 @@ public class PortChat
 		readThread.Start();
         while (_continue)
         {
-            data[0] = Console.ReadKey().KeyChar;
+            data = Console.ReadKey().KeyChar;
 			Console.WriteLine("");
 
-            if (data[0]==0x1B)
+            if (data==0x1B)
             {
                 _continue = false;
             }
-			if(data[0]==0x68)
+			 if(data==0x68)
 			{
 				Help();
 			}
-			if(data[0]==0x6c)
+			if(data==0x6c)
 			{
 				LastData(maindata);
 			}
-			/*if else (data[0]==0x40)
+			if (data==0x77)
 			{
-				_serialPort .Write(msg,0,1);
-			}*/
-          /*  else
-            {
-                _serialPort.Write(			//// problem dorozwiazania 
-                   data,0,1);
-            }*/
+				GetDatatouC();
+			}
         }
         readThread.Join();
         _serialPort.Close();
@@ -89,6 +79,7 @@ public class PortChat
 				try
             {
 					RxData((byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte(),(byte)_serialPort.ReadByte());
+					WriteControlByte(msg);
 			}
 				catch (TimeoutException) { }
    		}
@@ -240,23 +231,23 @@ public class PortChat
 			}
 			data=(int)(a*data-b);
 			
-			if (_data[0]==0x00)	//Usatrt init
+			if (_data[0]==0x30)	//Usatrt init
 			{
 				Console.WriteLine("Usart has been initialized");
 			}
-			if (_data[0]==0x01)	//TWI init
+			if (_data[0]==0x31)	//TWI init
 			{
 				Console.WriteLine("twi has been initialized");
 			}
-			if (_data[0]==0x02)	//ERR1
+			if (_data[0]==0x32)	//ERR1
 			{
 				Console.WriteLine("ERR1 reserwation for something");
 			}
-			if (_data[0]==0x03)	//ERR2
+			if (_data[0]==0x33)	//ERR2
 			{
 				Console.WriteLine("ERR2 reserwation for something");
 			}
-			if (_data[0]==0x04)	//ERR3
+			if (_data[0]==0x34)	//ERR3
 			{
 				Console.WriteLine("ERR3 reserwation for something");
 			}
@@ -272,7 +263,7 @@ public class PortChat
 			{
 				Console.WriteLine("Az:"+_data[2]);
 			}
-			if(_data[0]==0x20||_data[0]==0x21||_data[0]==0x22||_data[0]==0x23)
+			if(_data[0]==0x00||_data[0]==0x01||_data[0]==0x02||_data[0]==0x03)
 			{
 			Console.WriteLine("0x{0:X}",_data[0]);
 			Console.WriteLine(data+" (+/-2°C)");
@@ -290,52 +281,84 @@ public class PortChat
 			{
 				Console.WriteLine("twi has been initialized");
 			}
-			if(infodata==0x02)	//ERR1
+			 if(infodata==0x02)	//ERR1
 			{
 				Console.WriteLine("ERR1 reserwation for something");
 			}
-			if(infodata==0x03)	//ERR2
+			 if(infodata==0x03)	//ERR2
 			{
 				Console.WriteLine("ERR2 reserwation for something");
 			}
-			if(infodata==0x04)	//ERR3
+			 if(infodata==0x04)	//ERR3
 			{
 				Console.WriteLine("ERR3 reserwation for something");
 			}
-			if(infodata==0x10)	//Ax
+			 if(infodata==0x10)	//Ax
 			{
 				Console.WriteLine("Ax:"+datah);
 			}
-			if(infodata==0x11)	//Ay
+			 if(infodata==0x11)	//Ay0
 			{
 				Console.WriteLine("Ay:"+datah);
 			}
-			if(infodata==0x12)	//Az
+			 if(infodata==0x12)	//Az
 			{
 				Console.WriteLine("Az:"+datah);
 			}
-			if(infodata==0x20)	//T1
+			 if(infodata==0x36)	//T1
 			{
 				ADCValue("Board temperature: ",infodata,datah,datal);
 			}
-			if(infodata==0x21)	//T2
+			 if(infodata==0x30)	//T2
 			{
 				ADCValue("Sensor 1 temperature:",infodata,datah,datal);
 			}
-			if(infodata==0x22)	//T3
+			 if(infodata==0x31)	//T3
 			{
 				ADCValue("Sensor 2 temperature:",infodata,datah,datal);
 			}
-			if(infodata==0x23)	//T4
+			 if(infodata==0x32)	//T4
 			{
 				ADCValue("Sensor 3 temperature:",infodata,datah,datal);
 			}
-			if(infodata==0xff)
+			/* if(infodata==0x63)
 			{
-					
-			}
+					Console.WriteLine("uC:0x{0:X}  0x{1:X}",datah,datal);
+			}*/
+			//Console.WriteLine("uC:0x{0:X}      0x{1:X}",datah,datal);
 		}
-		
+		public static void GetDatatouC()
+		{
+			bool _stats = true;
+			
+			Console.WriteLine("##########################################w-HELP##########################################");
+			Console.WriteLine("###################################package is constrain to 3 char###############################");
+			Console.WriteLine("write c to start communication and read data from uC");
+			Console.WriteLine("write x to stop communication and reading data from uC");
+			Console.WriteLine("write 6 to read temperatur from board");
+			Console.WriteLine("write 0 to read temperature from sensor1");
+			Console.WriteLine("write 1 to read temperature from sensor2");
+			Console.WriteLine("write 2 to read temperature from sensor3");
+			Console.WriteLine("Press ESC to stop reading char from keyboard");
+			
+			while(_stats)
+			{	
+				for(int i=0;i<3 ;i++){
+				msg[i]=(byte) Console.ReadKey().KeyChar;
+				//Console.WriteLine("PC:0x{0:X}",msg[i]);
+				if(msg[i]==0x1B)
+				{
+					break;
+				}				
+				}
+				_stats= false;
+			}
+			
+		}
+		public static void WriteControlByte(byte[]data)
+		{
+			_serialPort .Write(data,0,3);
+		}
 		public static void Help()
 		{
 			Console.WriteLine("##########################################HELP##########################################");
@@ -346,6 +369,7 @@ public class PortChat
 			Console.WriteLine("Press \"h\" show Help");
 			Console.WriteLine("Press \"Esc\" to Exit");
 			Console.WriteLine("Press \"l\" to show last get data ");
+			Console.WriteLine("Press \"w\" to configurate order to uC ");
 			Console.WriteLine("");
 		}
 		
