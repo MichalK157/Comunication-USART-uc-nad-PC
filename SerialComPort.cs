@@ -332,7 +332,7 @@ public class PortChat
 			bool _stats = true;
 			
 			Console.WriteLine("##########################################w-HELP##########################################");
-			Console.WriteLine("###################################package is constrain to 3 char###############################");
+			Console.WriteLine("################################package is constrain to 3 char############################");
 			Console.WriteLine("write c to start communication and read data from uC");
 			Console.WriteLine("write x to stop communication and reading data from uC");
 			Console.WriteLine("write 6 to read temperatur from board");
