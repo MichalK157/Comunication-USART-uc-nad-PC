@@ -1,34 +1,55 @@
 using System;
-using EasyXLS;
+using System.IO;
 
-
-public class MyFile
+namespace Fileservice
 {
-	static void Main(string[] args)
+public class MyFile
+{	
+	public static string path = @"C:\Users\mkac\Documents\Gitprograms\Comunication-USART-uc-nad-PC\MyTestv2.txt";
+	public static StreamWriter wr;
+	public static StreamReader sr;
+	public static FileStream fs;
+	public static byte [] _byte=new byte[3];
+	
+/*
+	public static void Main()
+	{
+		CreateFile();
+		WriteToFile();
+       	ReadFile();
+	}
+*/	
+
+	public static void CreateFile()
+	{
+		if(!File.Exists(MyFile.path))
+		{
+			using(MyFile.wr=File.CreateText(MyFile.path))
+			{
+				MyFile.wr.WriteLine("DATA");
+                MyFile.wr.WriteLine("####################");
+                MyFile.wr.WriteLine("####################");
+			}
+		}
+	}
+	public static void WriteToFile()
+	{
+		using(MyFile.fs=File.Open(MyFile.path,FileMode.Open,FileAccess.Write))
+		{
+			MyFile.fs.Position=MyFile.fs.Length;
+			MyFile.fs.Write(_byte,0,3);
+		}
+	}
+	public static void ReadFile()
+	{
+		using (MyFile.sr = File.OpenText(MyFile.path))
         {
-            Console.WriteLine("Tutorial 03\n----------\n");
-
-        // Create an instance of the class that creates Excel files, having two sheets (1)
-        ExcelDocument workbook = new ExcelDocument(2);
-        
-        // Set the sheet names (2)
-        workbook.easy_getSheetAt(0).setSheetName("First tab");
-        workbook.easy_getSheetAt(1).setSheetName("Second tab");
-        
-        // Create the Excel file
-        Console.WriteLine("Writing file C:\\Samples\\Tutorial03.xls.");
-        workbook.easy_WriteXLSFile("C:\\Samples\\Tutorial03.xls");
-
-        // Confirm the creation of Excel file
-        String sError = workbook.easy_getError();
-        if (sError.Equals(""))
-            Console.Write("\nFile successfully created. Press Enter to Exit...");
-        else
-            Console.Write("\nError encountered: " + sError + "\nPress Enter to Exit...");
-
-        // Dispose memory
-        workbook.Dispose();
-
-        Console.ReadLine();
+            string s;
+            while ((s = MyFile.sr .ReadLine()) != null)
+            {
+                Console.WriteLine(s);
+            }
         }
+	}
+}
 }

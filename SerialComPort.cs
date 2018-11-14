@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using System.IO.Ports;
 using System.Threading;
+using Fileservice;
 public class PortChat
 {
     static bool _continue;
@@ -9,13 +11,13 @@ public class PortChat
 	const double b=22.23;
     static SerialPort _serialPort;
 	static byte [] msg= new byte[3];
-	
+	static MyFile my=new MyFile();
 	//msg[1]=0x40;
 	
 	
     public static void Main()
-    {	
-	
+    {
+		Fileservice.MyFile.CreateFile();
         string name;
       	char  data;
         StringComparer stringComparer = StringComparer.OrdinalIgnoreCase;
