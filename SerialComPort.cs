@@ -11,7 +11,8 @@ public class PortChat
 	const double b=22.23;
     static SerialPort _serialPort;
 	static byte [] msg= new byte[3];
-	static MyFile my=new MyFile();
+	MyFile my=new MyFile();
+	static short ii=0;	
 	//msg[1]=0x40;
 	
 	
@@ -51,7 +52,7 @@ public class PortChat
         {
             data = Console.ReadKey().KeyChar;
 			Console.WriteLine("");
-
+			//Console.WriteLine("0x{0:X}",(byte)data);
             if (data==0x1B)
             {
                 _continue = false;
@@ -67,6 +68,10 @@ public class PortChat
 			if (data==0x77)
 			{
 				GetDatatouC();
+			}
+			if(data==0x72)
+			{
+				Fileservice.MyFile.ReadFile();
 			}
         }
         readThread.Join();
@@ -275,6 +280,7 @@ public class PortChat
 		
 		public static void RxData( byte infodata, byte datah,byte datal)
 		{
+			
 			if(infodata==0x00)	//Usatrt init
 			{
 				Console.WriteLine("Usart has been initialized");
@@ -355,11 +361,12 @@ public class PortChat
 				}
 				_stats= false;
 			}
-			
+			WriteToFileData(msg);
 		}
-		public static void WriteControlByte(byte[]data)
+		public static void WriteControlByte(byte[] data)
 		{
 			_serialPort .Write(data,0,3);
+			
 		}
 		public static void Help()
 		{
@@ -375,5 +382,20 @@ public class PortChat
 			Console.WriteLine("");
 		}
 		
-		
+		public static void WriteToFileData(byte[] _data )
+		{
+			byte []m_i=BitConverter.GetBytes(ii);
+			//Array.Reverse(m_i);
+			byte []m_data=new byte[8];//Console.WriteLine(BitConverter.ToInt16(m_i, 0));
+			ii++;
+			m_data[0]=m_i[1];
+			m_data[1]=m_i[0];
+			m_data[2]=0x09;
+			m_data[3]=_data[0];
+			m_data[4]=0x09;
+			m_data[5]=_data[1];
+			m_data[6]=_data[2];
+			m_data[7]=0x0d;
+			Fileservice.MyFile.WriteToFile(m_data);
+		}
 }
